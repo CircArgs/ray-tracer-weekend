@@ -8,7 +8,7 @@ use std::ops::Neg;
 use std::ops::Sub;
 use std::ops::SubAssign;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq)]
 pub struct Vec3 {
     x: f32,
     y: f32,
@@ -16,7 +16,7 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new(e1: f32, e2: f32, e3: f32) -> Self {
+    pub fn new(e1: f32, e2: f32, e3: f32) -> Vec3 {
         Vec3 {
             x: e1,
             y: e2,
@@ -45,14 +45,14 @@ impl Vec3 {
         self.squared_length().sqrt()
     }
     fn squared_length(&self) -> f32 {
-        (self.x * self.x + self.y * self.y + self.z * self.z)
+        self.x * self.x + self.y * self.y + self.z * self.z
     }
 }
 
-impl Add<f32> for Vec3 {
+impl Add<f32> for &Vec3 {
     type Output = Vec3;
-    fn add(&self, rhs: f32) -> Self {
-        Self {
+    fn add(self, rhs: f32) -> Vec3 {
+        Vec3 {
             x: self.x + rhs,
             y: self.y + rhs,
             z: self.z + rhs,
@@ -60,10 +60,10 @@ impl Add<f32> for Vec3 {
     }
 }
 
-impl Add<Vec3> for Vec3 {
+impl Add<&Vec3> for &Vec3 {
     type Output = Vec3;
-    fn add(&self, rhs: f32) -> Self {
-        Self {
+    fn add(self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
             z: self.z + rhs.z,
@@ -72,27 +72,25 @@ impl Add<Vec3> for Vec3 {
 }
 
 impl AddAssign<f32> for Vec3 {
-    type Output = Vec3;
-    fn add(&mut self, rhs: f32) {
+    fn add_assign(&mut self, rhs: f32) {
         self.x += rhs;
         self.y += rhs;
         self.z += rhs;
     }
 }
 
-impl AddAssign<Vec3> for Vec3 {
-    type Output = Vec3;
-    fn add(&mut self, rhs: f32) -> Self {
+impl AddAssign<&Vec3> for Vec3 {
+    fn add_assign(&mut self, rhs: &Vec3) {
         self.x += rhs.x;
         self.y += rhs.y;
         self.z += rhs.z;
     }
 }
 
-impl Sub<f32> for Vec3 {
+impl Sub<f32> for &Vec3 {
     type Output = Vec3;
-    fn sub(&self, rhs: f32) -> Self {
-        Self {
+    fn sub(self, rhs: f32) -> Vec3 {
+        Vec3 {
             x: self.x - rhs,
             y: self.y - rhs,
             z: self.z - rhs,
@@ -100,10 +98,10 @@ impl Sub<f32> for Vec3 {
     }
 }
 
-impl Sub<Vec3> for Vec3 {
+impl Sub<&Vec3> for &Vec3 {
     type Output = Vec3;
-    fn sub(&self, rhs: f32) -> Self {
-        Self {
+    fn sub(self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
             z: self.z - rhs.z,
@@ -112,27 +110,25 @@ impl Sub<Vec3> for Vec3 {
 }
 
 impl SubAssign<f32> for Vec3 {
-    type Output = Vec3;
-    fn sub(&mut self, rhs: f32) {
+    fn sub_assign(&mut self, rhs: f32) {
         self.x -= rhs;
         self.y -= rhs;
         self.z -= rhs;
     }
 }
 
-impl SubAssign<Vec3> for Vec3 {
-    type Output = Vec3;
-    fn sub(&mut self, rhs: f32) -> Self {
+impl SubAssign<&Vec3> for Vec3 {
+    fn sub_assign(&mut self, rhs: &Vec3) {
         self.x -= rhs.x;
         self.y -= rhs.y;
         self.z -= rhs.z;
     }
 }
 
-impl Mul<f32> for Vec3 {
+impl Mul<f32> for &Vec3 {
     type Output = Vec3;
-    fn mul(&self, rhs: f32) -> Self {
-        Self {
+    fn mul(self, rhs: f32) -> Vec3 {
+        Vec3 {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
@@ -140,10 +136,10 @@ impl Mul<f32> for Vec3 {
     }
 }
 
-impl Mul<Vec3> for Vec3 {
+impl Mul<&Vec3> for &Vec3 {
     type Output = Vec3;
-    fn mul(&self, rhs: f32) -> Self {
-        Self {
+    fn mul(self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
             x: self.x * rhs.x,
             y: self.y * rhs.y,
             z: self.z * rhs.z,
@@ -152,27 +148,25 @@ impl Mul<Vec3> for Vec3 {
 }
 
 impl MulAssign<f32> for Vec3 {
-    type Output = Vec3;
-    fn mul(&mut self, rhs: f32) {
+    fn mul_assign(&mut self, rhs: f32) {
         self.x *= rhs;
         self.y *= rhs;
         self.z *= rhs;
     }
 }
 
-impl MulAssign<Vec3> for Vec3 {
-    type Output = Vec3;
-    fn mul(&mut self, rhs: f32) -> Self {
+impl MulAssign<&Vec3> for Vec3 {
+    fn mul_assign(&mut self, rhs: &Vec3) {
         self.x *= rhs.x;
         self.y *= rhs.y;
         self.z *= rhs.z;
     }
 }
 
-impl Div<f32> for Vec3 {
+impl Div<f32> for &Vec3 {
     type Output = Vec3;
-    fn div(&self, rhs: f32) -> Self {
-        Self {
+    fn div(self, rhs: f32) -> Vec3 {
+        Vec3 {
             x: self.x / rhs,
             y: self.y / rhs,
             z: self.z / rhs,
@@ -180,10 +174,10 @@ impl Div<f32> for Vec3 {
     }
 }
 
-impl Div<Vec3> for Vec3 {
+impl Div<&Vec3> for &Vec3 {
     type Output = Vec3;
-    fn div(&self, rhs: f32) -> Self {
-        Self {
+    fn div(self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
             x: self.x / rhs.x,
             y: self.y / rhs.y,
             z: self.z / rhs.z,
@@ -192,17 +186,15 @@ impl Div<Vec3> for Vec3 {
 }
 
 impl DivAssign<f32> for Vec3 {
-    type Output = Vec3;
-    fn div(&mut self, rhs: f32) {
+    fn div_assign(&mut self, rhs: f32) {
         self.x /= rhs;
         self.y /= rhs;
         self.z /= rhs;
     }
 }
 
-impl DivAssign<Vec3> for Vec3 {
-    type Output = Vec3;
-    fn div(&mut self, rhs: f32) -> Self {
+impl DivAssign<&Vec3> for Vec3 {
+    fn div_assign(&mut self, rhs: &Vec3) {
         self.x /= rhs.x;
         self.y /= rhs.y;
         self.z /= rhs.z;
@@ -211,11 +203,17 @@ impl DivAssign<Vec3> for Vec3 {
 
 impl Neg for Vec3 {
     type Output = Vec3;
-    fn neg(&self) -> Self {
-        Self {
+    fn neg(self) -> Vec3 {
+        Vec3 {
             x: -self.x,
             y: -self.y,
             z: -self.z,
         }
     }
+}
+
+mod test{
+    use super::*;
+
+    #
 }
