@@ -8,7 +8,7 @@ use std::ops::Neg;
 use std::ops::Sub;
 use std::ops::SubAssign;
 
-#[derive(Debug, Copy, Clone, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3 {
     x: f32,
     y: f32,
@@ -45,7 +45,26 @@ impl Vec3 {
         self.squared_length().sqrt()
     }
     fn squared_length(&self) -> f32 {
-        self.x * self.x + self.y * self.y + self.z * self.z
+        self.dot(self)
+    }
+    fn normalize(&self) -> Vec3 {
+        self / self.length()
+    }
+    fn _normalize(&mut self) {
+        *self = self.normalize();
+    }
+    fn sum(&self) -> f32 {
+        self.x + self.y + self.z
+    }
+    fn cross(&self, other: &Vec3) -> Vec3 {
+        Vec3 {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y - other.x,
+        }
+    }
+    fn dot(&self, other: &Vec3) -> f32 {
+        (self * other).sum()
     }
 }
 
@@ -212,8 +231,28 @@ impl Neg for Vec3 {
     }
 }
 
-mod test{
+#[cfg(test)]
+mod test {
     use super::*;
 
-    #
+    #[test]
+    fn test_adds() {
+        let temp = Vec3::new(1.0, 2.0, 3.0);
+        assert_eq!(temp, &temp * 1.0);
+    }
+    #[test]
+    fn test_normalize() {
+        let mut temp = Vec3::new(1.0, 2.0, 3.0);
+        let normalized = temp.normalize();
+        assert_ne!(temp, normalized);
+        temp._normalize();
+        assert_eq!(temp, normalized);
+    }
+
+    #[test]
+    fn test_cross() {
+        let temp1 = Vec3::new(1.0, 0.0, 0.0);
+        let temp2 = Vec3::new(0.0, 1.0, 0.0);
+        assert_eq!(temp1.cross(&temp2), Vec3::new(0.0, 0.0, 1.0));
+    }
 }
