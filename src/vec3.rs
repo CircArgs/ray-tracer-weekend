@@ -36,10 +36,10 @@ impl Vec3 {
         self.x
     }
     fn g(&self) -> f32 {
-        self.x
+        self.y
     }
     fn b(&self) -> f32 {
-        self.x
+        self.z
     }
     fn length(&self) -> f32 {
         self.squared_length().sqrt()
@@ -65,6 +65,9 @@ impl Vec3 {
     }
     fn dot(&self, other: &Vec3) -> f32 {
         (self * other).sum()
+    }
+    fn project(&self, onto: &Vec3) -> Vec3 {
+        onto * (self.dot(onto) / onto.squared_length())
     }
 }
 
@@ -185,11 +188,8 @@ impl MulAssign<&Vec3> for Vec3 {
 impl Div<f32> for &Vec3 {
     type Output = Vec3;
     fn div(self, rhs: f32) -> Vec3 {
-        Vec3 {
-            x: self.x / rhs,
-            y: self.y / rhs,
-            z: self.z / rhs,
-        }
+        let temp = 1.0 / rhs;
+        self * temp
     }
 }
 
@@ -206,9 +206,8 @@ impl Div<&Vec3> for &Vec3 {
 
 impl DivAssign<f32> for Vec3 {
     fn div_assign(&mut self, rhs: f32) {
-        self.x /= rhs;
-        self.y /= rhs;
-        self.z /= rhs;
+        let temp = 1.0 / rhs;
+        *self *= temp;
     }
 }
 
