@@ -23,50 +23,50 @@ impl Vec3 {
             z: e3,
         }
     }
-    fn x(&self) -> f32 {
+    pub fn x(&self) -> f32 {
         self.x
     }
-    fn y(&self) -> f32 {
+    pub fn y(&self) -> f32 {
         self.x
     }
-    fn z(&self) -> f32 {
+    pub fn z(&self) -> f32 {
         self.x
     }
-    fn r(&self) -> f32 {
+    pub fn r(&self) -> f32 {
         self.x
     }
-    fn g(&self) -> f32 {
+    pub fn g(&self) -> f32 {
         self.y
     }
-    fn b(&self) -> f32 {
+    pub fn b(&self) -> f32 {
         self.z
     }
-    fn length(&self) -> f32 {
+    pub fn length(&self) -> f32 {
         self.squared_length().sqrt()
     }
-    fn squared_length(&self) -> f32 {
+    pub fn squared_length(&self) -> f32 {
         self.dot(self)
     }
-    fn normalize(&self) -> Vec3 {
+    pub fn normalize(&self) -> Vec3 {
         self / self.length()
     }
-    fn _normalize(&mut self) {
+    pub fn _normalize(&mut self) {
         *self = self.normalize();
     }
-    fn sum(&self) -> f32 {
+    pub fn sum(&self) -> f32 {
         self.x + self.y + self.z
     }
-    fn cross(&self, other: &Vec3) -> Vec3 {
+    pub fn cross(&self, other: &Vec3) -> Vec3 {
         Vec3 {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y - other.x,
         }
     }
-    fn dot(&self, other: &Vec3) -> f32 {
+    pub fn dot(&self, other: &Vec3) -> f32 {
         (self * other).sum()
     }
-    fn project(&self, onto: &Vec3) -> Vec3 {
+    pub fn project(&self, onto: &Vec3) -> Vec3 {
         onto * (self.dot(onto) / onto.squared_length())
     }
 }

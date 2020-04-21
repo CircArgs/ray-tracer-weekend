@@ -1,15 +1,24 @@
-mod vec3;
+use super::vec3::*;
 
 pub struct Ray {
-    origin: vec3::Vec3,
-    direction: vec3::Vec3,
+    origin: Vec3,
+    direction: Vec3,
 }
 
 impl Ray {
-    fn new(origin: &Vec3, direction: &Vec3) -> Ray {
-        Ray { origin, direction }
+    pub fn new(origin: &Vec3, direction: &Vec3) -> Ray {
+        Ray {
+            origin: origin.clone(),
+            direction: direction.normalize(),
+        }
     }
-    fn parameterization(&self, t: f32) -> Vec3 {
-        t * self + origin
+    pub fn parameterization(&self, t: f32) -> Vec3 {
+        &(&self.direction * t) + &self.origin
+    }
+    pub fn direction(&self) -> &Vec3 {
+        &self.direction
+    }
+    pub fn origin(&self) -> &Vec3 {
+        &self.origin
     }
 }
