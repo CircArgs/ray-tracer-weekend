@@ -1,8 +1,10 @@
 use std::fs::File;
 use std::io::Write;
 mod ray;
+mod shapes;
 mod vec3;
 use ray::Ray;
+use shapes::*;
 use vec3::Vec3;
 
 fn color(ray: &Ray) -> Vec3 {
@@ -19,6 +21,13 @@ fn main() {
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
+
+    let sphere = Sphere::new(&origin, 3.0);
+
+    println!(
+        "{:?}",
+        sphere.intersect(&Ray::new(&horizontal, &Vec3::new(-1.0, 0.0, 0.0)))
+    );
 
     for j in (0..(ny - 1)).rev() {
         for i in 0..nx {
