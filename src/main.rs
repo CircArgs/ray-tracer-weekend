@@ -21,23 +21,29 @@ fn main() {
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
-
-    let sphere = Sphere::new(&origin, 3.0);
-
-    println!(
-        "{:?}",
-        sphere.intersect(&Ray::new(&horizontal, &Vec3::new(-1.0, 0.0, 0.0)))
-    );
-
-    for j in (0..(ny - 1)).rev() {
+    let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5);
+    let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.0), 100.0);
+    let world = Intersectables::new(vec![&sphere1]);
+    // let ray = Ray::new(&origin, &Vec3::new(0.0, 0.0, -1.0));
+    // println!("{:?}", world.intersect(&ray).unwrap().point);
+    for j in (0..ny).rev() {
         for i in 0..nx {
             let u = (i as f32) / (nx as f32);
             let v = (j as f32) / (ny as f32);
             let r = Ray::new(
                 &origin,
-                &(&(&vertical * v) + &(&lower_left_corner + &(&horizontal * u))),
+                &(&(&lower_left_corner + &(&horizontal * u)) + &(&vertical * v)),
             );
-            let col = color(&r);
+            let mut col = color(&r);
+            // let ray = Ray::new(&origin, &Vec3::new(0.0, 0.0, -1.0));
+            // println!("{:?}", world.objects[0].intersect(&ray).unwrap().point);
+            match world.intersect(&r) {
+                Some(hit) => {
+                    let n = (&hit.point + &Vec3::new(0.0, 0.0, 1.0)).normalize();
+                    col = &(&n + 1.0) * 0.5;
+                }
+                _ => {}
+            }
             let ir = col.r();
             let ig = col.g();
             let ib = col.b();
@@ -49,7 +55,6 @@ fn main() {
             ));
         }
     }
-    println!("{:?}", vec3::Vec3::new(1.0, 2.0, 3.0));
     let mut f = File::create("test.ppm").expect("Unable to create file");
     f.write_all(data.as_bytes()).expect("Unable to write data");
 }

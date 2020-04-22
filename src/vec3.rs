@@ -27,10 +27,10 @@ impl Vec3 {
         self.x
     }
     pub fn y(&self) -> f32 {
-        self.x
+        self.y
     }
     pub fn z(&self) -> f32 {
-        self.x
+        self.z
     }
     pub fn r(&self) -> f32 {
         self.x
