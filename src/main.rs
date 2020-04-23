@@ -1,4 +1,4 @@
-use std::f32::{consts, INFINITY};
+use std::f64::{consts, INFINITY};
 use std::fs::File;
 use std::io::Write;
 mod camera;
@@ -18,7 +18,10 @@ fn color(ray: &Ray) -> Vec3 {
 }
 
 fn main() {
-    println!("{:?}", Vec3::from_spherical(1.0, 0.0, 0.0));
+    println!(
+        "{:?}",
+        Vec3::from_spherical(1.0, consts::PI / 4.0, consts::PI / 4.0).length()
+    );
     // let nx = 200;
     // let ny = 100;
     // let ns = 100;
@@ -31,9 +34,9 @@ fn main() {
     //     for i in 0..nx {
     //         let mut col = Vec3::new(0.0, 0.0, 0.0);
     //         for s in 0..ns {
-    //             let rand: f32 = rand::thread_rng().gen_range(0.0, 1.0);
-    //             let u = ((i as f32) + rand) / (nx as f32);
-    //             let v = ((j as f32) + rand) / (ny as f32);
+    //             let rand: f64 = rand::thread_rng().gen_range(0.0, 1.0);
+    //             let u = ((i as f64) + rand) / (nx as f64);
+    //             let v = ((j as f64) + rand) / (ny as f64);
     //             let r = camera.get_ray(u, v);
     //             let mut sample_col = color(&r);
 
@@ -46,7 +49,7 @@ fn main() {
     //             }
     //             col += &sample_col
     //         }
-    //         col /= ns as f32;
+    //         col /= ns as f64;
     //         let ir = col.r();
     //         let ig = col.g();
     //         let ib = col.b();

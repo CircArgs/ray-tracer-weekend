@@ -13,7 +13,7 @@ impl Ray {
             direction: direction.normalize(),
         }
     }
-    pub fn parameterization(&self, t: f32) -> Vec3 {
+    pub fn parameterization(&self, t: f64) -> Vec3 {
         &(&self.direction * t) + &self.origin
     }
     pub fn direction(&self) -> &Vec3 {
