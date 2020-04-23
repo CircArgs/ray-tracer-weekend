@@ -1,3 +1,4 @@
+use std::f32::INFINITY;
 use std::fs::File;
 use std::io::Write;
 mod camera;
@@ -36,7 +37,7 @@ fn main() {
                 let r = camera.get_ray(u, v);
                 let mut sample_col = color(&r);
 
-                match world.intersect(&r) {
+                match world.intersect(&r, 0.0, INFINITY) {
                     Some(hit) => {
                         let n = (&hit.point + &Vec3::new(0.0, 0.0, 1.0)).normalize();
                         sample_col = &(&n + 1.0) * 0.5;

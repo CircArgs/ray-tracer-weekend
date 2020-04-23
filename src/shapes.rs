@@ -3,7 +3,7 @@ use super::vec3::*;
 use core::fmt::Debug;
 
 pub trait Intersect: Debug {
-    fn intersect(&self, ray: &Ray) -> Option<Hit>;
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit>;
 }
 
 pub trait Normal: Intersect {
@@ -47,10 +47,10 @@ impl<'a> Intersectables<'a> {
 }
 
 impl<'a> Intersect for Intersectables<'a> {
-    fn intersect(&self, ray: &Ray) -> Option<Hit> {
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
         let mut ret: Option<Hit> = None;
         for i in &self.objects {
-            let temp = i.intersect(ray);
+            let temp = i.intersect(ray, t_min, t_max);
             //need to check if temp exists and if so if it is closer than we currently have
             match &temp {
                 //if a hit
@@ -100,7 +100,7 @@ impl Sphere {
 }
 
 impl Intersect for Sphere {
-    fn intersect(&self, ray: &Ray) -> Option<Hit> {
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
         let a = 1.0;
         let b = 2.0 * ray.direction().dot(&(ray.origin() - &(self.center)));
         let c = ray.origin().squared_length() - 2.0 * ray.origin().dot(&(self.center))
@@ -113,18 +113,16 @@ impl Intersect for Sphere {
             let mut t: f32 = discriminant.sqrt();
             let t1 = -b + t;
             let t2 = -b - t;
-            //neither pos no intersect in pos dir
-            if (t1 < 1e-5) & (t2 < 1e-5) {
-                return None;
-            //both pos take closest
-            } else if (t1 > 1e-5) & (t2 > 1e-5) {
-                t = t1.min(t2);
-            //one pos take pos
+            //take closest intersection
+            if t1.abs() < t2.abs() {
+                t = t1;
             } else {
-                t = t1.max(t2);
+                t = t2;
             }
-            t *= 0.5;
-
+            t *= 0.5; //divide by 2 in denom. of quad. formula
+            if t < t_min || t > t_max {
+                return None;
+            }
             Some(Hit::new(&ray.parameterization(t), t, self))
         }
     }
