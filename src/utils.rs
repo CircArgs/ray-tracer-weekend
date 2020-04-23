@@ -1,3 +1,3 @@
-use std::f64;
+use std::f32;
 
-const TWO_PI = f64::consts::PI*2.0;
+const TWO_PI = f32::consts::PI*2.0;

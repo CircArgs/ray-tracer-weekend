@@ -3,7 +3,7 @@ use super::vec3::*;
 use core::fmt::Debug;
 
 pub trait Intersect: Debug {
-    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit>;
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit>;
 }
 
 pub trait Normal: Intersect {
@@ -13,12 +13,12 @@ pub trait Normal: Intersect {
 #[derive(Debug)]
 pub struct Hit<'a> {
     pub point: Vec3,
-    pub distance: f64,
+    pub distance: f32,
     pub object: &'a dyn Normal,
 }
 
 impl<'a> Hit<'a> {
-    pub fn new(point: &Vec3, distance: f64, object: &'a dyn Normal) -> Self {
+    pub fn new(point: &Vec3, distance: f32, object: &'a dyn Normal) -> Self {
         Hit {
             point: point.clone(),
             distance,
@@ -47,7 +47,7 @@ impl<'a> Intersectables<'a> {
 }
 
 impl<'a> Intersect for Intersectables<'a> {
-    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit> {
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
         let mut ret: Option<Hit> = None;
         for i in &self.objects {
             let temp = i.intersect(ray, t_min, t_max);
@@ -81,11 +81,11 @@ impl<'a> Intersect for Intersectables<'a> {
 #[derive(Debug)]
 pub struct Sphere {
     center: Vec3,
-    radius: f64,
+    radius: f32,
 }
 
 impl Sphere {
-    pub fn new(center: &Vec3, radius: f64) -> Sphere {
+    pub fn new(center: &Vec3, radius: f32) -> Sphere {
         Sphere {
             center: center.clone(),
             radius,
@@ -94,13 +94,13 @@ impl Sphere {
     pub fn center(&self) -> &Vec3 {
         &self.center
     }
-    pub fn radius(&self) -> f64 {
+    pub fn radius(&self) -> f32 {
         self.radius
     }
 }
 
 impl Intersect for Sphere {
-    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit> {
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
         let a = 1.0;
         let b = 2.0 * ray.direction().dot(&(ray.origin() - &(self.center)));
         let c = ray.origin().squared_length() - 2.0 * ray.origin().dot(&(self.center))
@@ -110,7 +110,7 @@ impl Intersect for Sphere {
         if discriminant < 1e-5 {
             None
         } else {
-            let mut t: f64 = discriminant.sqrt();
+            let mut t: f32 = discriminant.sqrt();
             let t1 = -b + t;
             let t2 = -b - t;
             //take closest intersection

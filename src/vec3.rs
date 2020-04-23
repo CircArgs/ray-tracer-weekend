@@ -10,41 +10,41 @@ use std::ops::SubAssign;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3 {
-    x: f64,
-    y: f64,
-    z: f64,
+    x: f32,
+    y: f32,
+    z: f32,
 }
 
 impl Vec3 {
-    pub fn new(e1: f64, e2: f64, e3: f64) -> Vec3 {
+    pub fn new(e1: f32, e2: f32, e3: f32) -> Vec3 {
         Vec3 {
             x: e1,
             y: e2,
             z: e3,
         }
     }
-    pub fn x(&self) -> f64 {
+    pub fn x(&self) -> f32 {
         self.x
     }
-    pub fn y(&self) -> f64 {
+    pub fn y(&self) -> f32 {
         self.y
     }
-    pub fn z(&self) -> f64 {
+    pub fn z(&self) -> f32 {
         self.z
     }
-    pub fn r(&self) -> f64 {
+    pub fn r(&self) -> f32 {
         self.x
     }
-    pub fn g(&self) -> f64 {
+    pub fn g(&self) -> f32 {
         self.y
     }
-    pub fn b(&self) -> f64 {
+    pub fn b(&self) -> f32 {
         self.z
     }
-    pub fn length(&self) -> f64 {
+    pub fn length(&self) -> f32 {
         self.squared_length().sqrt()
     }
-    pub fn squared_length(&self) -> f64 {
+    pub fn squared_length(&self) -> f32 {
         self.dot(self)
     }
     pub fn normalize(&self) -> Vec3 {
@@ -53,7 +53,7 @@ impl Vec3 {
     pub fn _normalize(&mut self) {
         *self = self.normalize();
     }
-    pub fn sum(&self) -> f64 {
+    pub fn sum(&self) -> f32 {
         self.x + self.y + self.z
     }
     pub fn cross(&self, other: &Vec3) -> Vec3 {
@@ -63,13 +63,13 @@ impl Vec3 {
             z: self.x * other.y - self.y - other.x,
         }
     }
-    pub fn dot(&self, other: &Vec3) -> f64 {
+    pub fn dot(&self, other: &Vec3) -> f32 {
         (self * other).sum()
     }
     pub fn project(&self, onto: &Vec3) -> Vec3 {
         onto * (self.dot(onto) / onto.squared_length())
     }
-    pub fn rotate(&self, phi: f64, theta: f64) -> Vec3 {
+    pub fn rotate(&self, phi: f32, theta: f32) -> Vec3 {
         //phi φ in [0, pi] indicates a deviation in radians from the +z axis
         //theta in [0, 2pi] indicates a deviation from the +x axis in the x-y plane
         let (sin_phi, cos_phi) = phi.sin_cos();
@@ -80,7 +80,7 @@ impl Vec3 {
         &(&(&col1 * self.x) + &(&col2 * self.y)) + &(&col3 * self.z)
     }
 
-    pub fn from_spherical(radius: f64, phi: f64, theta: f64) -> Self {
+    pub fn from_spherical(radius: f32, phi: f32, theta: f32) -> Self {
         //radius ρ in [0, infinity)
         //phi φ in [0, pi] indicates a deviation in radians from the +z axis
         //theta in [0, 2pi] indicates a deviation from the +x axis in the x-y plane
@@ -93,9 +93,9 @@ impl Vec3 {
     }
 }
 
-impl Add<f64> for &Vec3 {
+impl Add<f32> for &Vec3 {
     type Output = Vec3;
-    fn add(self, rhs: f64) -> Vec3 {
+    fn add(self, rhs: f32) -> Vec3 {
         Vec3 {
             x: self.x + rhs,
             y: self.y + rhs,
@@ -115,8 +115,8 @@ impl Add<&Vec3> for &Vec3 {
     }
 }
 
-impl AddAssign<f64> for Vec3 {
-    fn add_assign(&mut self, rhs: f64) {
+impl AddAssign<f32> for Vec3 {
+    fn add_assign(&mut self, rhs: f32) {
         self.x += rhs;
         self.y += rhs;
         self.z += rhs;
@@ -131,9 +131,9 @@ impl AddAssign<&Vec3> for Vec3 {
     }
 }
 
-impl Sub<f64> for &Vec3 {
+impl Sub<f32> for &Vec3 {
     type Output = Vec3;
-    fn sub(self, rhs: f64) -> Vec3 {
+    fn sub(self, rhs: f32) -> Vec3 {
         Vec3 {
             x: self.x - rhs,
             y: self.y - rhs,
@@ -153,8 +153,8 @@ impl Sub<&Vec3> for &Vec3 {
     }
 }
 
-impl SubAssign<f64> for Vec3 {
-    fn sub_assign(&mut self, rhs: f64) {
+impl SubAssign<f32> for Vec3 {
+    fn sub_assign(&mut self, rhs: f32) {
         self.x -= rhs;
         self.y -= rhs;
         self.z -= rhs;
@@ -169,9 +169,9 @@ impl SubAssign<&Vec3> for Vec3 {
     }
 }
 
-impl Mul<f64> for &Vec3 {
+impl Mul<f32> for &Vec3 {
     type Output = Vec3;
-    fn mul(self, rhs: f64) -> Vec3 {
+    fn mul(self, rhs: f32) -> Vec3 {
         Vec3 {
             x: self.x * rhs,
             y: self.y * rhs,
@@ -191,8 +191,8 @@ impl Mul<&Vec3> for &Vec3 {
     }
 }
 
-impl MulAssign<f64> for Vec3 {
-    fn mul_assign(&mut self, rhs: f64) {
+impl MulAssign<f32> for Vec3 {
+    fn mul_assign(&mut self, rhs: f32) {
         self.x *= rhs;
         self.y *= rhs;
         self.z *= rhs;
@@ -207,9 +207,9 @@ impl MulAssign<&Vec3> for Vec3 {
     }
 }
 
-impl Div<f64> for &Vec3 {
+impl Div<f32> for &Vec3 {
     type Output = Vec3;
-    fn div(self, rhs: f64) -> Vec3 {
+    fn div(self, rhs: f32) -> Vec3 {
         let temp = 1.0 / rhs;
         self * temp
     }
@@ -226,8 +226,8 @@ impl Div<&Vec3> for &Vec3 {
     }
 }
 
-impl DivAssign<f64> for Vec3 {
-    fn div_assign(&mut self, rhs: f64) {
+impl DivAssign<f32> for Vec3 {
+    fn div_assign(&mut self, rhs: f32) {
         let temp = 1.0 / rhs;
         *self *= temp;
     }
