@@ -1,8 +1,10 @@
 use std::fs::File;
 use std::io::Write;
+mod camera;
 mod ray;
 mod shapes;
 mod vec3;
+use camera::Camera;
 use ray::Ray;
 use shapes::*;
 use vec3::Vec3;
@@ -17,26 +19,18 @@ fn main() {
     let nx = 200;
     let ny = 100;
     let mut data = format!("P3\n{} {} \n255\n", nx, ny);
-    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::new(4.0, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, 2.0, 0.0);
-    let origin = Vec3::new(0.0, 0.0, 0.0);
     let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5);
     let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.0), 100.0);
-    let world = Intersectables::new(vec![&sphere1]);
-    // let ray = Ray::new(&origin, &Vec3::new(0.0, 0.0, -1.0));
-    // println!("{:?}", world.intersect(&ray).unwrap().point);
+    let world = Intersectables::new(vec![&sphere1, &sphere2]);
+    let camera = Camera::new();
+
     for j in (0..ny).rev() {
         for i in 0..nx {
             let u = (i as f32) / (nx as f32);
             let v = (j as f32) / (ny as f32);
-            let r = Ray::new(
-                &origin,
-                &(&(&lower_left_corner + &(&horizontal * u)) + &(&vertical * v)),
-            );
+            let r = camera.get_ray(u, v);
             let mut col = color(&r);
-            // let ray = Ray::new(&origin, &Vec3::new(0.0, 0.0, -1.0));
-            // println!("{:?}", world.objects[0].intersect(&ray).unwrap().point);
+
             match world.intersect(&r) {
                 Some(hit) => {
                     let n = (&hit.point + &Vec3::new(0.0, 0.0, 1.0)).normalize();
