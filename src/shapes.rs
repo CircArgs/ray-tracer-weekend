@@ -6,22 +6,28 @@ pub trait Intersect: Debug {
     fn intersect(&self, ray: &Ray) -> Option<Hit>;
 }
 
-pub trait Normal {
+pub trait Normal: Intersect {
     fn normal(&self, point: &Vec3) -> Ray;
 }
 
 #[derive(Debug)]
-pub struct Hit {
+pub struct Hit<'a> {
     pub point: Vec3,
     pub distance: f32,
+    pub object: &'a dyn Normal,
 }
 
-impl Hit {
-    pub fn new(point: &Vec3, distance: f32) -> Hit {
+impl<'a> Hit<'a> {
+    pub fn new(point: &Vec3, distance: f32, object: &'a dyn Normal) -> Self {
         Hit {
             point: point.clone(),
             distance,
+            object,
         }
+    }
+
+    pub fn normal(&self) -> Ray {
+        self.object.normal(&self.point)
     }
 }
 
@@ -119,7 +125,7 @@ impl Intersect for Sphere {
             }
             t *= 0.5;
 
-            Some(Hit::new(&ray.parameterization(t), t))
+            Some(Hit::new(&ray.parameterization(t), t, self))
         }
     }
 }

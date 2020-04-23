@@ -5,6 +5,7 @@ mod ray;
 mod shapes;
 mod vec3;
 use camera::Camera;
+use rand::prelude::*;
 use ray::Ray;
 use shapes::*;
 use vec3::Vec3;
@@ -18,26 +19,33 @@ fn color(ray: &Ray) -> Vec3 {
 fn main() {
     let nx = 200;
     let ny = 100;
+    let ns = 100;
     let mut data = format!("P3\n{} {} \n255\n", nx, ny);
     let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5);
     let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.0), 100.0);
     let world = Intersectables::new(vec![&sphere1, &sphere2]);
     let camera = Camera::new();
-
+    let mut rng = thread_rng();
     for j in (0..ny).rev() {
         for i in 0..nx {
-            let u = (i as f32) / (nx as f32);
-            let v = (j as f32) / (ny as f32);
-            let r = camera.get_ray(u, v);
-            let mut col = color(&r);
+            let mut col = Vec3::new(0.0, 0.0, 0.0);
+            for s in 0..ns {
+                let rand: f32 = rng.gen();
+                let u = ((i as f32) + rand) / (nx as f32);
+                let v = ((j as f32) + rand) / (ny as f32);
+                let r = camera.get_ray(u, v);
+                let mut sample_col = color(&r);
 
-            match world.intersect(&r) {
-                Some(hit) => {
-                    let n = (&hit.point + &Vec3::new(0.0, 0.0, 1.0)).normalize();
-                    col = &(&n + 1.0) * 0.5;
+                match world.intersect(&r) {
+                    Some(hit) => {
+                        let n = (&hit.point + &Vec3::new(0.0, 0.0, 1.0)).normalize();
+                        sample_col = &(&n + 1.0) * 0.5;
+                    }
+                    _ => {}
                 }
-                _ => {}
+                col += &sample_col
             }
+            col /= ns as f32;
             let ir = col.r();
             let ig = col.g();
             let ib = col.b();
