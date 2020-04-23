@@ -69,6 +69,28 @@ impl Vec3 {
     pub fn project(&self, onto: &Vec3) -> Vec3 {
         onto * (self.dot(onto) / onto.squared_length())
     }
+    pub fn rotate(&self, phi: f32, theta: f32) -> Vec3 {
+        //phi φ in [0, pi] indicates a deviation in radians from the +z axis
+        //theta in [0, 2pi] indicates a deviation from the +x axis in the x-y plane
+        let (sin_phi, cos_phi) = phi.sin_cos();
+        let (sin_theta, cos_theta) = theta.sin_cos();
+        let col1 = Vec3::new(cos_theta * sin_phi, sin_theta * sin_phi, cos_phi);
+        let col2 = Vec3::new(-sin_theta * sin_phi, cos_theta * sin_phi, 0.0);
+        let col3 = Vec3::new(cos_theta * cos_phi, sin_theta * cos_phi, -sin_phi);
+        &(&(&col1 * self.x) + &(&col2 * self.y)) + &(&col3 * self.z)
+    }
+
+    pub fn from_spherical(radius: f32, phi: f32, theta: f32) -> Self {
+        //radius ρ in [0, infinity)
+        //phi φ in [0, pi] indicates a deviation in radians from the +z axis
+        //theta in [0, 2pi] indicates a deviation from the +x axis in the x-y plane
+        let sin_phi = phi.sin();
+        Vec3::new(
+            radius * sin_phi * theta.cos(),
+            radius * sin_phi * theta.sin(),
+            radius * phi.cos(),
+        )
+    }
 }
 
 impl Add<f32> for &Vec3 {
