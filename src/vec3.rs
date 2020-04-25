@@ -15,13 +15,18 @@ pub struct Vec3 {
     z: f32,
 }
 
+type Color = Vec3;
+
 impl Vec3 {
-    pub fn new(e1: f32, e2: f32, e3: f32) -> Vec3 {
+    pub fn new(e1: f32, e2: f32, e3: f32) -> Self {
         Vec3 {
             x: e1,
             y: e2,
             z: e3,
         }
+    }
+    pub fn from_float(e: f32) -> Self {
+        Vec3 { x: e, y: e, z: e }
     }
     pub fn x(&self) -> f32 {
         self.x

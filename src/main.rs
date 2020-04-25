@@ -2,46 +2,24 @@ use std::f32::{consts, INFINITY};
 use std::fs::File;
 use std::io::Write;
 mod camera;
+mod materials;
 mod ray;
 mod shapes;
 mod vec3;
 use camera::Camera;
+use materials::*;
 use rand::Rng;
 use ray::Ray;
 use shapes::*;
 use vec3::*;
 
-fn rand_in_unit_sphere() -> Vec3 {
-    loop {
-        let temp = &(&Vec3::new(
-            rand::thread_rng().gen(),
-            rand::thread_rng().gen(),
-            rand::thread_rng().gen(),
-        ) * 2.0)
-            - &Vec3::new(1.0, 1.0, 1.0);
-        if temp.squared_length() <= 1.0 {
-            return temp;
-        }
-    }
-}
-
-fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
+fn color<T: Material + Normal>(ray: &Ray, world: &Intersectables<T>, max_hits: i32) -> Vec3 {
     if max_hits == 0 {
-        let unit_direction = ray.direction().normalize();
-        let t = 0.5 * (unit_direction.y() + 1.0);
-        return &(&Vec3::new(1.0, 1.0, 1.0) * (1.0 - t)) + &(&Vec3::new(0.5, 0.7, 1.0) * t);
+        return Vec3::from_float(0.0);
     }
-    match world.intersect(ray, 0.001, INFINITY) {
+    match world.intersect::<T>(ray, 0.001, INFINITY) {
         Some(hit) => {
-            return &color(
-                &Ray::from_spherical(
-                    &hit.point,
-                    rand::thread_rng().gen_range(0.0, consts::PI),
-                    rand::thread_rng().gen_range(0.0, 2.0 * consts::PI),
-                ),
-                world,
-                max_hits - 1,
-            ) * 0.5;
+            return hit.albedo() * &color(&hit.collide(&ray), &world, max_hits - 1);
         }
         _ => {
             let unit_direction = ray.direction().normalize();
@@ -51,28 +29,17 @@ fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
     };
 }
 
-// fn color(ray: &Ray, world: &Intersectables) -> Vec3 {
-//     match world.intersect(ray, 0.001, INFINITY) {
-//         Some(hit) => {
-//             let target =
-//                 &(&hit.point + hit.object.normal(&hit.point).direction()) + &rand_in_unit_sphere();
-//             return color(&Ray::new(&hit.point, &(&target - &hit.point)), &world);
-//         }
-//         _ => {
-//             let unit_direction = ray.direction().normalize();
-//             let t = 0.5 * (unit_direction.y() + 1.0);
-//             return &(&Vec3::new(1.0, 1.0, 1.0) * (1.0 - t)) + &(&Vec3::new(0.5, 0.7, 1.0) * t);
-//         }
-//     };
-// }
-
 fn main() {
     let nx = 200;
     let ny = 100;
     let ns = 100;
     let mut data = format!("P3\n{} {} \n255\n", nx, ny);
-    let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5);
-    let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.0), 100.0);
+    let material1 = Lambertian::new(&Vec3::new(0.8, 0.3, 0.3));
+    let material2 = Lambertian::new(&Vec3::new(0.8, 0.8, 0.0));
+    let material3 = Lambertian::new(&Vec3::new(0.8, 0.6, 0.2));
+    let material4 = Lambertian::new(&Vec3::new(0.8, 0.8, 0.8));
+    let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5, &material1);
+    let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.0), 100.0, &material2);
     let world = Intersectables::new(vec![&sphere1, &sphere2]);
     let camera = Camera::new();
     for j in (0..ny).rev() {
