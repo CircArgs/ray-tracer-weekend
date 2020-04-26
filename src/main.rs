@@ -36,11 +36,13 @@ fn main() {
     let mut data = format!("P3\n{} {} \n255\n", nx, ny);
     let material1 = Lambertian::new(&Vec3::new(0.8, 0.3, 0.3));
     let material2 = Lambertian::new(&Vec3::new(0.8, 0.8, 0.0));
-    let material3 = Lambertian::new(&Vec3::new(0.8, 0.6, 0.2));
-    let material4 = Lambertian::new(&Vec3::new(0.8, 0.8, 0.8));
+    let material3 = Metal::new(&Vec3::new(0.8, 0.6, 0.2), 1.0);
+    let material4 = Metal::new(&Vec3::new(0.8, 0.8, 0.8), 0.3);
     let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5, &material1);
     let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.0), 100.0, &material2);
-    let world = Intersectables::new(vec![&sphere1, &sphere2]);
+    let sphere3 = Sphere::new(&Vec3::new(1.0, 0.0, -1.0), 0.5, &material3);
+    let sphere4 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, &material4);
+    let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4]);
     let camera = Camera::new();
     for j in (0..ny).rev() {
         for i in 0..nx {
@@ -50,7 +52,7 @@ fn main() {
                 let u = ((i as f32) + rand) / (nx as f32);
                 let v = ((j as f32) + rand) / (ny as f32);
                 let r = camera.get_ray(u, v);
-                col += &color(&r, &world, 10000);
+                col += &color(&r, &world, 50);
             }
             col /= ns as f32;
             let ir = col.r();
