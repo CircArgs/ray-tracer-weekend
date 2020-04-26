@@ -1,11 +1,12 @@
 use super::ray::*;
 use super::shapes::*;
 use super::vec3::*;
+use core::fmt::Debug;
 use rand::Rng;
 use std::f32::consts;
 
-pub trait Material: Clone {
-    fn collide<T: Material>(&self, ray_in: &Ray, hit: &Hit<T>) -> Ray;
+pub trait Material: Debug {
+    fn collide(&self, ray_in: &Ray, hit: &Hit) -> Ray;
     fn albedo(&self) -> &Vec3;
 }
 
@@ -25,8 +26,11 @@ impl Lambertian {
     }
 }
 
-impl<T: Material> Material for Lambertian {
-    fn collide(&self, ray_in: &Ray, hit: &Hit<T>) -> Ray {
+impl Material for Lambertian {
+    fn albedo(&self) -> &Vec3 {
+        &self.albedo
+    }
+    fn collide(&self, ray_in: &Ray, hit: &Hit) -> Ray {
         Ray::from_spherical(
             &hit.point,
             rand::thread_rng().gen_range(0.0, consts::PI),

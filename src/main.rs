@@ -1,23 +1,23 @@
-use std::f32::{consts, INFINITY};
-use std::fs::File;
-use std::io::Write;
 mod camera;
 mod materials;
 mod ray;
 mod shapes;
 mod vec3;
-use camera::Camera;
+use camera::*;
 use materials::*;
 use rand::Rng;
-use ray::Ray;
+use ray::*;
 use shapes::*;
+use std::f32::{consts, INFINITY};
+use std::fs::File;
+use std::io::Write;
 use vec3::*;
 
-fn color<T: Material + Normal>(ray: &Ray, world: &Intersectables<T>, max_hits: i32) -> Vec3 {
+fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
     if max_hits == 0 {
         return Vec3::from_float(0.0);
     }
-    match world.intersect::<T>(ray, 0.001, INFINITY) {
+    match world.intersect(ray, 0.001, INFINITY) {
         Some(hit) => {
             return hit.albedo() * &color(&hit.collide(&ray), &world, max_hits - 1);
         }

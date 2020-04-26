@@ -4,23 +4,23 @@ use super::vec3::*;
 use core::fmt::Debug;
 
 pub trait Intersect: Debug {
-    fn intersect<T: Normal>(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit<T>>;
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit>;
 }
 
 pub trait Normal: Intersect {
     fn normal(&self, point: &Vec3) -> Ray;
-    fn material<T: Material>(&self) -> T;
+    fn material(&self) -> &dyn Material;
 }
 
 #[derive(Debug)]
-pub struct Hit<'a, T: Normal> {
+pub struct Hit<'a> {
     pub point: Vec3,
     pub distance: f32,
-    pub object: &'a T,
+    pub object: &'a dyn Normal,
 }
 
-impl<'a, T: Material + Normal> Hit<'a, T> {
-    pub fn new(point: &Vec3, distance: f32, object: &'a T) -> Self {
+impl<'a> Hit<'a> {
+    pub fn new(point: &Vec3, distance: f32, object: &'a dyn Normal) -> Self {
         Hit {
             point: point.clone(),
             distance,
@@ -33,32 +33,32 @@ impl<'a, T: Material + Normal> Hit<'a, T> {
     }
 
     pub fn collide(&self, ray: &Ray) -> Ray {
-        self.object.material::<T>().collide(ray, self)
+        self.object.material().collide(ray, self)
     }
 
     pub fn albedo(&self) -> &Vec3 {
-        self.object.material::<T>().albedo()
+        self.object.material().albedo()
     }
 }
 
 #[derive(Debug)]
-pub struct Intersectables<'a, T: Intersect> {
-    pub objects: Vec<&'a T>,
+pub struct Intersectables<'a> {
+    pub objects: Vec<&'a dyn Normal>,
 }
 
-impl<'a, T: Intersect> Intersectables<'a, T> {
-    pub fn new(objects: Vec<&'a T>) -> Self {
+impl<'a> Intersectables<'a> {
+    pub fn new(objects: Vec<&'a dyn Normal>) -> Self {
         Intersectables { objects }
     }
 
-    pub fn push(&mut self, object: &'a T) {
+    pub fn push(&mut self, object: &'a dyn Normal) {
         self.objects.push(object);
     }
 }
 
-impl<'a, T: Material + Normal> Intersect for Intersectables<'a, T> {
-    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit<T>> {
-        let mut ret: Option<Hit<T>> = None;
+impl<'a> Intersect for Intersectables<'a> {
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
+        let mut ret: Option<Hit> = None;
         for i in &self.objects {
             let temp = (*i).intersect(ray, t_min, t_max);
             //need to check if temp exists and if so if it is closer than we currently have
@@ -89,18 +89,18 @@ impl<'a, T: Material + Normal> Intersect for Intersectables<'a, T> {
 }
 
 #[derive(Debug)]
-pub struct Sphere<T: Material + Debug> {
+pub struct Sphere<'a> {
     center: Vec3,
     radius: f32,
-    material: T,
+    material: &'a dyn Material,
 }
 
-impl<T: Material + Debug> Sphere<T> {
-    pub fn new(center: &Vec3, radius: f32, material: &T) -> Self {
+impl<'a> Sphere<'a> {
+    pub fn new(center: &Vec3, radius: f32, material: &'a dyn Material) -> Self {
         Sphere {
             center: center.clone(),
             radius,
-            material: material.clone(),
+            material,
         }
     }
     pub fn center(&self) -> &Vec3 {
@@ -111,8 +111,8 @@ impl<T: Material + Debug> Sphere<T> {
     }
 }
 
-impl<'a, T: Material + Debug> Intersect for Sphere<T> {
-    fn intersect<S: 'a + Normal>(&'a self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit<S>> {
+impl<'a> Intersect for Sphere<'a> {
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
         let a = 1.0;
         let b = 2.0 * ray.direction().dot(&(ray.origin() - &(self.center)));
         let c = ray.origin().squared_length() - 2.0 * ray.origin().dot(&(self.center))
@@ -140,8 +140,11 @@ impl<'a, T: Material + Debug> Intersect for Sphere<T> {
     }
 }
 
-impl<T: Material + Debug> Normal for Sphere<T> {
+impl<'a> Normal for Sphere<'a> {
     fn normal(&self, point: &Vec3) -> Ray {
         Ray::new(point, &(point - &self.center))
+    }
+    fn material(&self) -> &dyn Material {
+        self.material
     }
 }
