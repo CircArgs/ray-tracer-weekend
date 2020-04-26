@@ -1,3 +1,4 @@
+use super::materials::*;
 use super::ray::*;
 use super::vec3::*;
 use core::fmt::Debug;
@@ -8,6 +9,7 @@ pub trait Intersect: Debug {
 
 pub trait Normal: Intersect {
     fn normal(&self, point: &Vec3) -> Ray;
+    fn material(&self) -> &dyn Material;
 }
 
 #[derive(Debug)]
@@ -28,6 +30,14 @@ impl<'a> Hit<'a> {
 
     pub fn normal(&self) -> Ray {
         self.object.normal(&self.point)
+    }
+
+    pub fn collide(&self, ray: &Ray) -> Ray {
+        self.object.material().collide(ray, self)
+    }
+
+    pub fn albedo(&self) -> &Vec3 {
+        self.object.material().albedo()
     }
 }
 
@@ -79,16 +89,18 @@ impl<'a> Intersect for Intersectables<'a> {
 }
 
 #[derive(Debug)]
-pub struct Sphere {
+pub struct Sphere<'a> {
     center: Vec3,
     radius: f32,
+    material: &'a dyn Material,
 }
 
-impl Sphere {
-    pub fn new(center: &Vec3, radius: f32) -> Sphere {
+impl<'a> Sphere<'a> {
+    pub fn new(center: &Vec3, radius: f32, material: &'a dyn Material) -> Self {
         Sphere {
             center: center.clone(),
             radius,
+            material,
         }
     }
     pub fn center(&self) -> &Vec3 {
@@ -99,7 +111,7 @@ impl Sphere {
     }
 }
 
-impl Intersect for Sphere {
+impl<'a> Intersect for Sphere<'a> {
     fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
         let a = 1.0;
         let b = 2.0 * ray.direction().dot(&(ray.origin() - &(self.center)));
@@ -128,8 +140,11 @@ impl Intersect for Sphere {
     }
 }
 
-impl Normal for Sphere {
+impl<'a> Normal for Sphere<'a> {
     fn normal(&self, point: &Vec3) -> Ray {
         Ray::new(point, &(point - &self.center))
+    }
+    fn material(&self) -> &dyn Material {
+        self.material
     }
 }
