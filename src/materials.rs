@@ -69,8 +69,114 @@ impl Material for Metal {
         &self.albedo
     }
     fn collide(&self, ray_in: &Ray, hit: &Hit) -> Ray {
-        let proj = hit.normal().direction() * ray_in.direction().dot(hit.normal().direction());
-        let refl = ray_in.direction() - &(&proj * 2.0);
-        Ray::new(&hit.point, &(&refl + &(&rand_in_unit_sphere() * self.fuzz)))
+        let normal = *hit.normal().direction();
+        Ray::new(&hit.point, &reflect(ray_in.direction(), &normal, self.fuzz))
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct Dielectric {
+    albedo: Vec3,
+    pub refraction_index: f32,
+    pub fuzz: f32,
+}
+
+impl Dielectric {
+    pub fn albedo(&self) -> &Vec3 {
+        &self.albedo
+    }
+    pub fn new(refraction_index: f32, fuzz: f32) -> Self {
+        Dielectric {
+            albedo: Vec3::from_float(1.0),
+            refraction_index,
+            fuzz,
+        }
+    }
+}
+
+impl Material for Dielectric {
+    fn albedo(&self) -> &Vec3 {
+        &self.albedo
+    }
+    fn collide(&self, ray_in: &Ray, hit: &Hit) -> Ray {
+        let normal = hit.normal();
+        let mut proj_length = normal.direction().dot(ray_in.direction());
+        let (outward_normal, ni_over_nt, cosine) = if proj_length > 0.0 {
+            (
+                -*normal.direction(),
+                self.refraction_index,
+                proj_length * self.refraction_index,
+            )
+        } else {
+            (
+                *normal.direction(),
+                1.0 / self.refraction_index,
+                -proj_length,
+            )
+        };
+        let refracted = refract(ray_in.direction(), &outward_normal, ni_over_nt);
+        let mut reflect_prob = 1.0;
+        match refracted {
+            None => {}
+            Some(_) => {
+                let ret = schlick(cosine, self.refraction_index);
+                // println!("{}", ret);
+                reflect_prob = ret;
+            }
+        }
+        if rand::thread_rng().gen::<f32>() < reflect_prob {
+            // println!("refl");
+            return Ray::new(
+                &hit.point,
+                &reflect(ray_in.direction(), &outward_normal, self.fuzz),
+            );
+        }
+        // println!("refr");
+        Ray::new(&hit.point, &refracted.unwrap())
+    }
+}
+
+fn schlick(cos: f32, ref_idx: f32) -> f32 {
+    let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+    // println!("{} {} {}", r0, cos, ref_idx);
+    r0 *= r0;
+    r0 + (1.0 - r0) * (1.0 - cos).powi(5)
+}
+
+pub fn reflect(ray_in: &Vec3, normal: &Vec3, fuzz: f32) -> Vec3 {
+    let projection_length = ray_in.dot(normal);
+    let proj = normal * projection_length;
+    let refl = ray_in - &(&proj * 2.0);
+    if fuzz == 0.0 {
+        return refl;
+    }
+    &refl + &(&rand_in_unit_sphere() * fuzz)
+}
+
+pub fn refract(ray_in: &Vec3, normal: &Vec3, ni_over_nt: f32) -> Option<Vec3> {
+    //snell's law: n*sin(theta)=n' * sin(theta')
+    //we'll use n, theta as the incoming (incident) values
+    //since normal direction is a unit vector and ray_in direction is a unit vector their dot product is the cosine of their subtending angle
+    //- because we assume normal is ourtward facing and incident ray is going in
+    let projection_length = -ray_in.dot(normal);
+    //here the discriminant tells us if we have TIR.
+    //it's square root times the reversed normal will be part of the construction of the refraction ray
+    //hence we need to be able to sqrt it and so it needs to be nonnegative
+    //this is 1.0 - refraction_index_ratio^2 *  sin(theta)^2
+    //(1.0-proj_length*proj_length) = sin(theta)^2 by the trig id from pythagorean thm
+    let discriminant =
+        1.0 - ni_over_nt * ni_over_nt * (1.0 - projection_length * projection_length);
+    if discriminant < 0.0 {
+        None
+    } else {
+        //projection of incident ray onto outward facing normal
+        let p = normal * projection_length;
+        //othorgonal component of incident ray
+        let a = ray_in + &p;
+        //othorgonal component of refracted ray
+        let b = &a * ni_over_nt;
+        //projection of refracted ray onto inward facing normal
+        let pp = normal * -discriminant.sqrt();
+        Some(&pp + &b)
     }
 }

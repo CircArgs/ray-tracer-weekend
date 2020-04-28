@@ -22,7 +22,7 @@ fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
             return hit.albedo() * &color(&hit.collide(&ray), &world, max_hits - 1);
         }
         _ => {
-            let unit_direction = ray.direction().normalize();
+            let unit_direction = ray.direction();
             let t = 0.5 * (unit_direction.y() + 1.0);
             return &(&Vec3::new(1.0, 1.0, 1.0) * (1.0 - t)) + &(&Vec3::new(0.5, 0.7, 1.0) * t);
         }
@@ -30,19 +30,28 @@ fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
 }
 
 fn main() {
+    let i = Vec3::new(-1.0, -1.0, 0.0).normalize();
+    let normal = Vec3::new(0.0, 1.0, 0.0).normalize();
+    println!("{:?}", i);
+    let proj_length = i.dot(&normal);
+    println!("{:?}", proj_length);
+    println!("{:?}", refract(&i, &normal, 1.0 / 1.5));
+    println!("{:?}", reflect(&i, &normal, 0.0));
     let nx = 200;
     let ny = 100;
     let ns = 100;
     let mut data = format!("P3\n{} {} \n255\n", nx, ny);
-    let material1 = Lambertian::new(&Vec3::new(0.8, 0.3, 0.3));
-    let material2 = Lambertian::new(&Vec3::new(0.8, 0.8, 0.0));
-    let material3 = Metal::new(&Vec3::new(0.8, 0.6, 0.2), 1.0);
-    let material4 = Metal::new(&Vec3::new(0.8, 0.8, 0.8), 0.3);
+    let material1 = Lambertian::new(&Vec3::new(0.8, 0.2, 0.5));
+    let material2 = Lambertian::new(&Vec3::new(0.5, 0.8, 0.0));
+    let material3 = Metal::new(&Vec3::new(0.5, 0.5, 0.5), 0.0);
+    let material4 = Dielectric::new(1.5, 0.0);
     let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5, &material1);
-    let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.0), 100.0, &material2);
+    let sphere2 = Sphere::new(&Vec3::new(0.0, -50.5, -1.0), 50.0, &material2);
     let sphere3 = Sphere::new(&Vec3::new(1.0, 0.0, -1.0), 0.5, &material3);
     let sphere4 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, &material4);
     let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4]);
+    // let sphere5 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), -0.45, &material4);
+    // let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4, &sphere5]);
     let camera = Camera::new();
     for j in (0..ny).rev() {
         for i in 0..nx {
