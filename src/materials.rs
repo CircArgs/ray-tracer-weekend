@@ -102,11 +102,10 @@ impl Material for Dielectric {
         let normal = hit.normal();
         let mut proj_length = normal.direction().dot(ray_in.direction());
         let (outward_normal, ni_over_nt, cosine) = if proj_length > 0.0 {
-            (
-                -*normal.direction(),
-                self.refraction_index,
-                proj_length * self.refraction_index,
-            )
+            (-*normal.direction(), self.refraction_index, {
+                let cos = proj_length * self.refraction_index;
+                (1.0 - self.refraction_index * self.refraction_index * (1.0 - cos * cos)).sqrt()
+            })
         } else {
             (
                 *normal.direction(),

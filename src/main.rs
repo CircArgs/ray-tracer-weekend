@@ -22,8 +22,7 @@ fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
             return hit.albedo() * &color(&hit.collide(&ray), &world, max_hits - 1);
         }
         _ => {
-            let unit_direction = ray.direction();
-            let t = 0.5 * (unit_direction.y() + 1.0);
+            let t = 0.5 * (ray.direction().y() + 1.0);
             return &(&Vec3::new(1.0, 1.0, 1.0) * (1.0 - t)) + &(&Vec3::new(0.5, 0.7, 1.0) * t);
         }
     };
@@ -49,17 +48,16 @@ fn main() {
     let sphere2 = Sphere::new(&Vec3::new(0.0, -50.5, -1.0), 50.0, &material2);
     let sphere3 = Sphere::new(&Vec3::new(1.0, 0.0, -1.0), 0.5, &material3);
     let sphere4 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, &material4);
-    let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4]);
-    // let sphere5 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), -0.45, &material4);
-    // let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4, &sphere5]);
+    // let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4]);
+    let sphere5 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), -0.45, &material4);
+    let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4, &sphere5]);
     let camera = Camera::new();
     for j in (0..ny).rev() {
         for i in 0..nx {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
             for s in 0..ns {
-                let rand: f32 = rand::thread_rng().gen_range(0.0, 1.0);
-                let u = ((i as f32) + rand) / (nx as f32);
-                let v = ((j as f32) + rand) / (ny as f32);
+                let u = ((i as f32) + rand::thread_rng().gen_range(0.0, 1.0)) / (nx as f32);
+                let v = ((j as f32) + rand::thread_rng().gen_range(0.0, 1.0)) / (ny as f32);
                 let r = camera.get_ray(u, v);
                 col += &color(&r, &world, 50);
             }
