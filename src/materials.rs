@@ -5,13 +5,28 @@ use core::fmt::Debug;
 use rand::Rng;
 use std::f32::consts;
 
+// fn rand_in_unit_sphere() -> Vec3 {
+//     Vec3::from_spherical(
+//         1.0,
+//         rand::thread_rng().gen_range(0.0, consts::PI),
+//         rand::thread_rng().gen_range(0.0, 2.0 * consts::PI),
+//     )
+// }
+
 fn rand_in_unit_sphere() -> Vec3 {
-    Vec3::from_spherical(
-        1.0,
-        rand::thread_rng().gen_range(0.0, consts::PI),
-        rand::thread_rng().gen_range(0.0, 2.0 * consts::PI),
-    )
+    loop {
+        let temp = &(&Vec3::new(
+            rand::thread_rng().gen(),
+            rand::thread_rng().gen(),
+            rand::thread_rng().gen(),
+        ) * 2.0)
+            - &Vec3::new(1.0, 1.0, 1.0);
+        if temp.squared_length() <= 1.0 {
+            return temp;
+        }
+    }
 }
+
 pub trait Material: Debug {
     fn collide(&self, ray_in: &Ray, hit: &Hit) -> Ray;
     fn albedo(&self) -> &Vec3;

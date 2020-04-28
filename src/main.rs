@@ -22,6 +22,18 @@ fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
             return hit.albedo() * &color(&hit.collide(&ray), &world, max_hits - 1);
         }
         _ => {
+            let x = ray.direction().x();
+            let y = ray.direction().y();
+            if x > 0.0 && y > 0.0 {
+                return Vec3::from_float(0.0);
+            }
+            if x < 0.0 && y > 0.0 {
+                return Vec3::new(0.0, 0.0, 1.0);
+            }
+            if x < 0.0 && y < 0.0 {
+                return Vec3::new(0.0, 1.0, 0.0);
+            }
+            return Vec3::new(1.0, 0.0, 0.0);
             let t = 0.5 * (ray.direction().y() + 1.0);
             return &(&Vec3::new(1.0, 1.0, 1.0) * (1.0 - t)) + &(&Vec3::new(0.5, 0.7, 1.0) * t);
         }
@@ -47,10 +59,11 @@ fn main() {
     let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5, &material1);
     let sphere2 = Sphere::new(&Vec3::new(0.0, -50.5, -1.0), 50.0, &material2);
     let sphere3 = Sphere::new(&Vec3::new(1.0, 0.0, -1.0), 0.5, &material3);
-    let sphere4 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, &material4);
+    let sphere4 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5, &material4);
     // let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4]);
-    let sphere5 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), -0.45, &material4);
-    let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4, &sphere5]);
+    let world = Intersectables::new(vec![&sphere4]);
+    // let sphere5 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), -0.45, &material4);
+    // let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4, &sphere5]);
     let camera = Camera::new();
     for j in (0..ny).rev() {
         for i in 0..nx {
