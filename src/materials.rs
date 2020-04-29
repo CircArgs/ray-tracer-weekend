@@ -5,27 +5,27 @@ use core::fmt::Debug;
 use rand::Rng;
 use std::f32::consts;
 
-// fn rand_in_unit_sphere() -> Vec3 {
-//     Vec3::from_spherical(
-//         1.0,
-//         rand::thread_rng().gen_range(0.0, consts::PI),
-//         rand::thread_rng().gen_range(0.0, 2.0 * consts::PI),
-//     )
-// }
-
 fn rand_in_unit_sphere() -> Vec3 {
-    loop {
-        let temp = &(&Vec3::new(
-            rand::thread_rng().gen(),
-            rand::thread_rng().gen(),
-            rand::thread_rng().gen(),
-        ) * 2.0)
-            - &Vec3::new(1.0, 1.0, 1.0);
-        if temp.squared_length() <= 1.0 {
-            return temp;
-        }
-    }
+    Vec3::from_spherical(
+        1.0,
+        rand::thread_rng().gen_range(0.0, consts::PI),
+        rand::thread_rng().gen_range(0.0, 2.0 * consts::PI),
+    )
 }
+
+// fn rand_in_unit_sphere() -> Vec3 {
+//     loop {
+//         let temp = &(&Vec3::new(
+//             rand::thread_rng().gen(),
+//             rand::thread_rng().gen(),
+//             rand::thread_rng().gen(),
+//         ) * 2.0)
+//             - &Vec3::new(1.0, 1.0, 1.0);
+//         if temp.squared_length() <= 1.0 {
+//             return temp;
+//         }
+//     }
+// }
 
 pub trait Material: Debug {
     fn collide(&self, ray_in: &Ray, hit: &Hit) -> Ray;
@@ -53,11 +53,8 @@ impl Material for Lambertian {
         &self.albedo
     }
     fn collide(&self, ray_in: &Ray, hit: &Hit) -> Ray {
-        Ray::from_spherical(
-            &hit.point,
-            rand::thread_rng().gen_range(0.0, consts::PI),
-            rand::thread_rng().gen_range(0.0, 2.0 * consts::PI),
-        )
+        let target = hit.normal().direction() + &rand_in_unit_sphere();
+        Ray::new(&hit.point, &target)
     }
 }
 
@@ -191,6 +188,6 @@ pub fn refract(ray_in: &Vec3, normal: &Vec3, ni_over_nt: f32) -> Option<Vec3> {
         let b = &a * ni_over_nt;
         //projection of refracted ray onto inward facing normal
         let pp = normal * -discriminant.sqrt();
-        Some(&pp + &b)
+        Some(&pp - &b)
     }
 }
