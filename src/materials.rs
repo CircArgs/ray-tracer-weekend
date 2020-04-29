@@ -111,6 +111,38 @@ impl Material for Dielectric {
         &self.albedo
     }
     fn collide(&self, ray_in: &Ray, hit: &Hit) -> Ray {
+        // if the ray direction and hit normal are in the same half-sphere
+        //     let (outward_normal, ni_over_nt, cosine) =
+        //         if ray_in.direction().dot(hit.normal().direction()) > 0.0 {
+        //             (
+        //                 hit.normal().direction() * -1.0,
+        //                 self.refraction_index,
+        //                 self.refraction_index * ray_in.direction().dot(hit.normal().direction())
+        //                     / ray_in.direction().length(),
+        //             )
+        //         } else {
+        //             (
+        //                 *hit.normal().direction(),
+        //                 1.0 / self.refraction_index,
+        //                 -ray_in.direction().dot(hit.normal().direction()) / ray_in.direction().length(),
+        //             )
+        //         };
+
+        //     if let Some(refracted) = refract(ray_in.direction(), &outward_normal, ni_over_nt) {
+        //         let reflection_prob = schlick(cosine, self.refraction_index);
+        //         let out_dir = if rand::thread_rng().gen::<f32>() < reflection_prob {
+        //             reflect(ray_in.direction(), hit.normal().direction(), 0.0)
+        //         } else {
+        //             refracted
+        //         };
+        //         Ray::new(&hit.point, &out_dir)
+        //     } else {
+        //         Ray::new(
+        //             &hit.point,
+        //             &reflect(ray_in.direction(), hit.normal().direction(), 0.0),
+        //         )
+        //     }
+        // }
         let normal = hit.normal();
         let mut proj_length = normal.direction().dot(ray_in.direction());
         let (outward_normal, ni_over_nt, cosine) = if proj_length > 0.0 {
@@ -126,28 +158,29 @@ impl Material for Dielectric {
             )
         };
         let refracted = refract(ray_in.direction(), &outward_normal, ni_over_nt);
+        println!("refracted {:?}", refracted);
         let mut reflect_prob = 1.0;
         match refracted {
             None => {}
             Some(_) => {
                 let ret = schlick(cosine, self.refraction_index);
-                // println!("{}", ret);
+                println!("schlick {}", ret);
                 reflect_prob = ret;
             }
         }
         if rand::thread_rng().gen::<f32>() < reflect_prob {
-            // println!("refl");
+            println!("refl");
             return Ray::new(
                 &hit.point,
                 &reflect(ray_in.direction(), &outward_normal, self.fuzz),
             );
         }
-        // println!("refr");
+        println!("refr");
         Ray::new(&hit.point, &refracted.unwrap())
     }
 }
 
-fn schlick(cos: f32, ref_idx: f32) -> f32 {
+pub fn schlick(cos: f32, ref_idx: f32) -> f32 {
     let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     // println!("{} {} {}", r0, cos, ref_idx);
     r0 *= r0;
@@ -164,7 +197,23 @@ pub fn reflect(ray_in: &Vec3, normal: &Vec3, fuzz: f32) -> Vec3 {
     &refl + &(&rand_in_unit_sphere() * fuzz)
 }
 
+// pub fn refract(uv: &Vec3, n: &Vec3, ni_over_nt: f32) -> Option<Vec3> {
+//     // ni * sin(i) = nt * sin(t)
+//     // sin(t) = sin(i) * (ni / nt)
+//     let dt = uv.dot(n);
+//     let discriminant = 1.0 - ni_over_nt * ni_over_nt * (1.0 - dt * dt);
+//     if discriminant > 0.0 {
+//         let refracted = &(&(uv - &(n * dt)) * ni_over_nt) - &(n * discriminant.sqrt());
+//         Some(refracted)
+//     } else {
+//         None
+//     }
+// }
+
 pub fn refract(ray_in: &Vec3, normal: &Vec3, ni_over_nt: f32) -> Option<Vec3> {
+    println!("normal {:?}", normal);
+    println!("ray {:?}", ray_in);
+    println!("ratio {:?}", ni_over_nt);
     //snell's law: n*sin(theta)=n' * sin(theta')
     //we'll use n, theta as the incoming (incident) values
     //since normal direction is a unit vector and ray_in direction is a unit vector their dot product is the cosine of their subtending angle

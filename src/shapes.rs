@@ -113,6 +113,7 @@ impl<'a> Sphere<'a> {
 
 impl<'a> Intersect for Sphere<'a> {
     fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
+        println!("sphere ray {:?}", ray);
         let a = 1.0;
         let b = 2.0 * ray.direction().dot(&(ray.origin() - &(self.center)));
         let c = ray.origin().squared_length() - 2.0 * ray.origin().dot(&(self.center))
@@ -123,18 +124,27 @@ impl<'a> Intersect for Sphere<'a> {
             None
         } else {
             let mut t: f32 = discriminant.sqrt();
-            let t1 = -b + t;
-            let t2 = -b - t;
+            let mut t1 = -b + t;
+            let mut t2 = -b - t;
+            //divide by 2 in denom. of quad. formula
+            t1 *= 0.5;
+            t2 *= 0.5;
+            println!("{} {}", t1, t2);
             //take closest intersection
-            if t1.abs() < t2.abs() {
-                t = t1;
-            } else {
-                t = t2;
+            if t1.abs() > t2.abs() {
+                let temp = t1;
+                t1 = t2;
+                t2 = temp;
             }
-            t *= 0.5; //divide by 2 in denom. of quad. formula
-            if t < t_min || t > t_max {
+
+            if t1 > t_min && t1 < t_max {
+                t = t1;
+            } else if t2 > t_min || t2 < t_max {
+                t = t2
+            } else {
                 return None;
             }
+            println!("{} ", t);
             Some(Hit::new(&ray.parameterization(t), t, self))
         }
     }
