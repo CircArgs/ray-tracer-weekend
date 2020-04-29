@@ -112,8 +112,36 @@ impl<'a> Sphere<'a> {
 }
 
 impl<'a> Intersect for Sphere<'a> {
+    // fn intersect(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
+    //     let oc = r.origin() - &self.center;
+    //     let a = r.direction().dot(r.direction());
+    //     let hb = oc.dot(r.direction());
+    //     let c = oc.dot(&oc) - self.radius * self.radius;
+    //     let discriminant = hb * hb - a * c;
+    //     if discriminant > 0.0 {
+    //         let t = (-hb - discriminant.sqrt()) / a;
+    //         if t >= t_min {
+    //             let p = r.parameterization(t);
+    //             return Some(Hit {
+    //                 distance: t,
+    //                 point: p,
+    //                 object: self,
+    //             });
+    //         }
+    //         let t = (-hb + discriminant.sqrt()) / a;
+    //         if t >= t_min {
+    //             let p = r.parameterization(t);
+    //             return Some(Hit {
+    //                 distance: t,
+    //                 point: p,
+    //                 object: self,
+    //             });
+    //         }
+    //     }
+    //     None
+    // }
     fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit> {
-        println!("sphere ray {:?}", ray);
+        // println!("sphere ray {:?}", ray);
         let a = 1.0;
         let b = 2.0 * ray.direction().dot(&(ray.origin() - &(self.center)));
         let c = ray.origin().squared_length() - 2.0 * ray.origin().dot(&(self.center))
@@ -123,28 +151,23 @@ impl<'a> Intersect for Sphere<'a> {
         if discriminant < 1e-5 {
             None
         } else {
-            let mut t: f32 = discriminant.sqrt();
-            let mut t1 = -b + t;
-            let mut t2 = -b - t;
+            let mut t = discriminant.sqrt();
+            let mut t1 = -b - t;
+            let mut t2 = -b + t;
             //divide by 2 in denom. of quad. formula
             t1 *= 0.5;
             t2 *= 0.5;
-            println!("{} {}", t1, t2);
+            // println!("hit distances {} {}", t1, t2);
             //take closest intersection
-            if t1.abs() > t2.abs() {
-                let temp = t1;
-                t1 = t2;
-                t2 = temp;
-            }
 
-            if t1 > t_min && t1 < t_max {
+            if t1 >= t_min && t1 < t_max {
                 t = t1;
-            } else if t2 > t_min || t2 < t_max {
+            } else if t2 > t_min && t2 < t_max {
                 t = t2
             } else {
                 return None;
             }
-            println!("{} ", t);
+            // println!("chosen hit dist {} ", t);
             Some(Hit::new(&ray.parameterization(t), t, self))
         }
     }
@@ -152,7 +175,7 @@ impl<'a> Intersect for Sphere<'a> {
 
 impl<'a> Normal for Sphere<'a> {
     fn normal(&self, point: &Vec3) -> Ray {
-        Ray::new(point, &(point - &self.center))
+        Ray::new(point, &(&(point - &self.center) * self.radius.signum()))
     }
     fn material(&self) -> &dyn Material {
         self.material
