@@ -14,31 +14,14 @@ use std::io::Write;
 use vec3::*;
 
 fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
-    // println!(
-    //     "========================{}=========================",
-    //     max_hits
-    // );
     if max_hits == 0 {
         return Vec3::from_float(0.0);
     }
     match world.intersect(ray, 0.001, INFINITY) {
         Some(hit) => {
-            // println!("hit: {:?}", hit);
             return hit.albedo() * &color(&hit.collide(&ray), &world, max_hits - 1);
         }
         _ => {
-            // let x = ray.direction().x();
-            // let y = ray.direction().y();
-            // if x > 0.0 && y > 0.0 {
-            //     return Vec3::from_float(0.0);
-            // }
-            // if x < 0.0 && y > 0.0 {
-            //     return Vec3::new(0.0, 0.0, 1.0);
-            // }
-            // if x < 0.0 && y < 0.0 {
-            //     return Vec3::new(0.0, 1.0, 0.0);
-            // }
-            // return Vec3::new(1.0, 0.0, 0.0);
             let t = 0.5 * (ray.direction().y() + 1.0);
             return &(&Vec3::new(1.0, 1.0, 1.0) * (1.0 - t)) + &(&Vec3::new(0.5, 0.7, 1.0) * t);
         }
@@ -46,13 +29,6 @@ fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
 }
 
 fn main() {
-    // let i = Vec3::new(-1.0, -1.0, 0.0).normalize();
-    // let normal = Vec3::new(0.0, 1.0, 0.0).normalize();
-    // println!("{:?}", i);
-    // let proj_length = i.dot(&normal);
-    // println!("{:?}", proj_length);
-    // println!("{:?}", refract(&i, &normal, 1.0 / 1.5));
-    // println!("{:?}", reflect(&i, &normal, 0.0));
     let nx = 200;
     let ny = 100;
     let ns = 100;
@@ -72,8 +48,9 @@ fn main() {
         for i in 0..nx {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
             for s in 0..ns {
-                let u = ((i as f32) + rand::thread_rng().gen_range(0.0, 1.0)) / (nx as f32);
-                let v = ((j as f32) + rand::thread_rng().gen_range(0.0, 1.0)) / (ny as f32);
+                let rr = rand::thread_rng().gen_range(0.0, 1.0);
+                let u = ((i as f32) + rr) / (nx as f32);
+                let v = ((j as f32) + rr) / (ny as f32);
                 let r = camera.get_ray(u, v);
                 col += &color(&r, &world, 50);
             }
