@@ -13,7 +13,7 @@ use std::fs::File;
 use std::io::Write;
 use vec3::*;
 
-fn color(ray: &Ray, world: &Intersectables, max_hits: i32) -> Vec3 {
+fn color(ray: &Ray, world: &Intersectables, max_hits: u32) -> Vec3 {
     if max_hits == 0 {
         return Vec3::from_float(0.0);
     }
@@ -37,13 +37,21 @@ fn main() {
     let material2 = Lambertian::new(&Vec3::new(0.5, 0.8, 0.0));
     let material3 = Metal::new(&Vec3::new(0.5, 0.5, 0.5), 0.0);
     let material4 = Dielectric::new(1.5, 0.0);
-    let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.5), 0.5, &material1);
-    let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.5), 100.0, &material2);
-    let sphere3 = Sphere::new(&Vec3::new(1.0, 0.0, -1.5), 0.5, &material3);
-    let sphere4 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.5), 0.5, &material4);
-    let sphere5 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.5), -0.49, &material4);
+    let sphere1 = Sphere::new(&Vec3::new(0.0, 0.0, -1.0), 0.5, &material1);
+    let sphere2 = Sphere::new(&Vec3::new(0.0, -100.5, -1.0), 100.0, &material2);
+    let sphere3 = Sphere::new(&Vec3::new(1.0, 0.0, -1.0), 0.5, &material3);
+    let sphere4 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, &material4);
+    let sphere5 = Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), -0.49, &material4);
     let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4, &sphere5]);
-    let camera = Camera::new();
+
+    let camera = Camera::new(
+        &Vec3::new(-2.0, 2.0, 1.0),
+        &Vec3::new(0.0, 0.0, -1.0),
+        &Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        (nx as f32) / (ny as f32),
+    );
+
     for j in (0..ny).rev() {
         for i in 0..nx {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
