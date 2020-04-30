@@ -101,8 +101,10 @@ impl Material for Dielectric {
         let proj_length = normal.direction().dot(ray_in.direction());
         let (outward_normal, ni_over_nt, cosine) = if proj_length > 0.0 {
             (-*normal.direction(), self.refraction_index, {
-                let cos = proj_length * self.refraction_index;
-                (1.0 - self.refraction_index * self.refraction_index * (1.0 - cos * cos)).sqrt()
+                (1.0 - self.refraction_index
+                    * self.refraction_index
+                    * (1.0 - proj_length * proj_length))
+                    .sqrt()
             })
         } else {
             (
@@ -134,11 +136,7 @@ impl Material for Dielectric {
 fn schlick(cosine: f32, index: f32) -> f32 {
     let r0 = (1.0 - index) / (1.0 + index);
     let r0 = r0 * r0;
-    let ret = r0 + (1.0 - r0) * (1.0 - cosine).powi(5);
-    if ret < 0.0 {
-        println!("{}", ret);
-    }
-    ret
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
 
 pub fn reflect(ray_in: &Vec3, normal: &Vec3, fuzz: f32) -> Vec3 {
