@@ -45,18 +45,20 @@ fn main() {
     let world = Intersectables::new(vec![&sphere1, &sphere2, &sphere3, &sphere4, &sphere5]);
 
     let camera = Camera::new(
-        &Vec3::new(-2.0, 2.0, 1.0),
+        &Vec3::new(3.0, 3.0, 2.0),
         &Vec3::new(0.0, 0.0, -1.0),
         &Vec3::new(0.0, 1.0, 0.0),
-        90.0,
+        20.0,
         (nx as f32) / (ny as f32),
+        1.0,
     );
 
+    let mut rng = rand::thread_rng();
     for j in (0..ny).rev() {
         for i in 0..nx {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
-            for s in 0..ns {
-                let rr = rand::thread_rng().gen_range(0.0, 1.0);
+            for _ in 0..ns {
+                let rr: f32 = rng.gen();
                 let u = ((i as f32) + rr) / (nx as f32);
                 let v = ((j as f32) + rr) / (ny as f32);
                 let r = camera.get_ray(u, v);
